@@ -211,7 +211,8 @@ plt.savefig('top_terms.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 ```
-<img width="1189" height="790" alt="Top Terms by Average Score" src="https://github.com/user-attachments/assets/06af404c-43b6-465f-a380-ff7686e26bfd" />
+<img width="1389" height="989" alt="Top 15 Terms by Average Popularity" src="https://github.com/user-attachments/assets/76a24a22-2a21-4d87-a674-b98556fde115" />
+
 
 
 ```
@@ -1024,8 +1025,10 @@ try:
 except Exception as e:
     print(f"Error in anomaly detection: {e}")
 
-
 ```
+
+<img width="1189" height="790" alt="Anomaly Detection by Severity" src="https://github.com/user-attachments/assets/68c0b808-7bd3-402b-b5e4-8225fb27b008" />
+
 
 Purpose: This code identifies how search interest in related technology topics moves together over time, revealing whether these terms represent complementary interests, competing trends, or independent search patterns within the same market.
 
@@ -1079,6 +1082,9 @@ try:
 except Exception as e:
     print(f"Error in correlation analysis: {e}")
 ```
+
+<img width="749" height="590" alt="Correlation Matrix of AI-Related Terms (New York NY)" src="https://github.com/user-attachments/assets/3f286146-19eb-45e9-87ae-4432b68f9d63" />
+
 
 Purpose: This analysis helps understand geographic distribution patterns of AI interest, enabling targeted regional strategies, identifying markets with high technology adoption, and revealing potential opportunities for location-based marketing or content distribution.
 
