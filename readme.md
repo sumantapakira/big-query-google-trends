@@ -210,6 +210,12 @@ plt.tight_layout()
 plt.savefig('top_terms.png', dpi=300, bbox_inches='tight')
 plt.show()
 
+```
+<img width="1189" height="790" alt="Top Terms by Average Score" src="https://github.com/user-attachments/assets/06af404c-43b6-465f-a380-ff7686e26bfd" />
+
+
+```
+
 # =============================================================================
 # REGIONAL ANALYSIS - GEOGRAPHIC PATTERN IDENTIFICATION
 # =============================================================================
@@ -237,6 +243,11 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 plt.savefig('regional_analysis.png', dpi=300, bbox_inches='tight')
 plt.show()
+```
+<img width="1189" height="790" alt="Average Search Popularity by Region" src="https://github.com/user-attachments/assets/9020c4fc-3a1a-4ff5-9725-a6d026487c5d" />
+
+
+```
 
 # =============================================================================
 # DATA QUALITY CHECK - TERM AVAILABILITY VALIDATION
@@ -602,6 +613,10 @@ else:
     print("Simple forecast model created as fallback")
 
 ```
+
+<img width="989" height="590" alt="Model Comparison" src="https://github.com/user-attachments/assets/2b2812e3-b74e-4bc5-871c-6c38bdc47010" />
+
+
 **8. Forcast generation and visualization:** Creating actionable predictions with clear visual representations that stakeholders can easily understand. The visualizations communicate complex forecast data in an intuitive way, complete with confidence intervals showing prediction reliability.
 
 Purpose: Transform model outputs into understandable forecasts with visualizations that show future trends and uncertainty.
@@ -675,6 +690,13 @@ try:
 
 except Exception as e:
     print(f"Error generating forecast: {e}")
+```
+
+<img width="1386" height="1790" alt="Search trend forcast" src="https://github.com/user-attachments/assets/83c5f77c-dbe9-4730-b0be-b8f0bd544050" />
+
+
+```
+
 
 # =============================================================================
 # MANUAL MODEL VALIDATION AND ERROR METRICS
@@ -942,6 +964,7 @@ except Exception as e:
     print(f"Error in advanced analysis: {e}")
 ```
 
+<img width="1189" height="790" alt="Top Terms by Average Score" src="https://github.com/user-attachments/assets/e2267df9-0612-4385-aa49-98dd6a1add73" />
 
 
 **9. Anomaly detection:** Identifying unusual patterns that deviate from normal behavior to catch emerging trends or potential issues early. This serves as an early warning system for viral content, data problems, or unexpected market shifts.
