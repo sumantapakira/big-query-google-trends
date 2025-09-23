@@ -1,4 +1,4 @@
-                                          **Google Trends Forecasting Solution**
+                                          Google Trends Forecasting Solution
 Optimised BigQuery ML Pipeline for Trend Forecasting and Anomaly Detection
 
 **Problem Statement**
