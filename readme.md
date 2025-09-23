@@ -66,7 +66,7 @@ This submission is for the track Approach 1: The AI Architect 🧠 and Approach 
 | Generative AI | Vertex AI Integration | Natural language understanding and generation |
 | Orchestration | BigQuery Stored Procedures | Automated pipeline management |
 
-** Let's get dive into details** 
+**Let's get dive into details** 
 
 **1. Initial setup and import**
 
