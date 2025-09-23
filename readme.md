@@ -2519,6 +2519,7 @@ print("="*60)
 ```
 Purpose: This serves as the final validation and documentation step, giving users immediate visibility into what components were successfully created and confirming the system is ready for use.
 
+```
 # =============================================================================
 # FINAL SYSTEM STATUS CHECK
 # =============================================================================
@@ -2555,3 +2556,4 @@ except Exception as e:
 print("\n" + "="*60)
 print("PIPELINE SETUP COMPLETED!")
 print("="*60)
+```
