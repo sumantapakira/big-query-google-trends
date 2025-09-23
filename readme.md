@@ -1,4 +1,4 @@
-                                          Google Trends Forecasting Solution
+                                          **Google Trends Forecasting Solution**
 Optimised BigQuery ML Pipeline for Trend Forecasting and Anomaly Detection
 
 **Problem Statement**
@@ -842,7 +842,6 @@ except Exception as e:
     print(f"Error generating forecast visualization: {e}")
 
 ```
-To perform advanced business intelligence analysis on Google Trends data by identifying top-performing search terms and generating actionable insights with growth trend analysis.
 
 Purpose: This code serves as an automated business analyst that transforms raw search data into strategic recommendations. It identifies the most valuable search terms by geographic region, categorizes their performance levels, detects growth patterns, and provides specific business guidance for each term based on its current performance and trajectory.
 
@@ -1005,8 +1004,6 @@ except Exception as e:
 
 ```
 
-To analyze the relationship and synchronization between related AI/technology search terms within a specific geographic market (New York NY) using statistical correlation analysis.
-
 Purpose: This code identifies how search interest in related technology topics moves together over time, revealing whether these terms represent complementary interests, competing trends, or independent search patterns within the same market.
 
 ```
@@ -1060,8 +1057,6 @@ except Exception as e:
     print(f"Error in correlation analysis: {e}")
 ```
 
-Identify and rank geographic markets (Designated Market Areas) based on their level of interest in AI-related search terms, revealing regional hotspots for technology topics.
-
 Purpose: This analysis helps understand geographic distribution patterns of AI interest, enabling targeted regional strategies, identifying markets with high technology adoption, and revealing potential opportunities for location-based marketing or content distribution.
 
 ```
@@ -1102,8 +1097,6 @@ try:
 except Exception as e:
     print(f"Error in DMA analysis: {e}")
 ```
-
-Establish a production-ready monitoring and dashboard infrastructure that ensures the forecasting system remains operational, reliable, and maintainable over time.
 
 Purpose: This code transitions the analysis from experimental to production-grade by creating robust monitoring systems, fail-safe mechanisms, and business-friendly dashboards that provide ongoing visibility into system health and performance.
 
@@ -1344,8 +1337,6 @@ except Exception as e:
 print("\nProduction dashboard setup completed!")
 ```
 
-Create a persistent anomaly detection system that identifies and categorizes unusual search patterns in Google Trends data, with intelligent existence checking to prevent redundant operations.
-
 Purpose: This code establishes a reliable anomaly tracking mechanism that can be used for ongoing monitoring, alerting, and trend analysis without duplicating efforts or overwriting existing data.
 
 ```
@@ -1484,7 +1475,6 @@ for view_name, view_query in dashboard_views.items():
 
 print(f"Successfully created {len(created_views)} out of {len(dashboard_views)} dashboard views")
 ```
-validate dashboard functionality and provide immediate visibility into the quality and content of created views through systematic data sampling.
 
 Purpose: This code serves as both a quality assurance check and a user preview mechanism, ensuring that each dashboard view works correctly and giving stakeholders immediate insight into the data they can expect to see.
 
@@ -1553,8 +1543,6 @@ if 'dashboard_dma_analysis' in created_views:
         print(f"Error querying DMA analysis: {e}")
 ```
 
-create a high-level executive summary view that provides key performance indicators (KPIs) and system health metrics in a single, easily consumable format.
-
 Purpose: This view serves as a "dashboard of dashboards" - giving managers and executives an at-a-glance overview of the entire system's status without needing to navigate multiple detailed views.
 
 ```
@@ -1606,8 +1594,6 @@ try:
 except Exception as e:
     print(f"Error creating dashboard summary: {e}")
 ```
-
-Identify and categorize search terms that are experiencing significant growth momentum, providing early detection of emerging trends before they become mainstream.
 
 Purpose: This analysis serves as a "trend radar" that helps businesses spot rising opportunities early, allowing for proactive content creation, marketing campaigns, or product development based on growing search interest rather than reacting to established trends.
 
@@ -1673,8 +1659,6 @@ except Exception as e:
     print(f"Error creating trending terms view: {e}")
 ```
 
-Establish an audit trail and operational logging system that tracks model retraining activities and system maintenance operations.
-
 Purpose: This creates accountability and visibility into the ML pipeline operations, enabling troubleshooting, performance monitoring, and compliance tracking by recording when models are updated, who initiated changes, and whether operations succeeded or failed.
 
 ```
@@ -1711,3 +1695,863 @@ except Exception as e:
     print(f"Error creating log table: {e}")
 ```
 
+
+**11. Monitoring System:** implementing automated checks to ensure data quality and system reliability over time. This prevents silent failures and ensures our analysis remains accurate as new data arrives.
+
+Purpose: Maintain system health and data quality through automated monitoring and alerting.
+
+```
+# =============================================================================
+# MONITORING DASHBOARD WITH SYSTEM HEALTH METRICS
+# =============================================================================
+
+try:
+    simple_monitoring_query = """
+    CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.monitoring_dashboard` AS
+    WITH data_stats AS (
+      SELECT
+        CURRENT_DATE() as monitoring_date,
+        'DATA_STATS' as metric_category,
+        'TOTAL_RECORDS' as metric_name,
+        COUNT(*) as metric_value,
+        'NORMAL' as status
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    ),
+    term_stats AS (
+      SELECT
+        CURRENT_DATE() as monitoring_date,
+        'TERM_STATS' as metric_category,
+        'UNIQUE_TERMS' as metric_name,
+        COUNT(DISTINCT term) as metric_value,
+        'NORMAL' as status
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    ),
+    dma_stats AS (
+      SELECT
+        CURRENT_DATE() as monitoring_date,
+        'DMA_STATS' as metric_category,
+        'UNIQUE_DMAS' as metric_name,
+        COUNT(DISTINCT dma_name) as metric_value,
+        'NORMAL' as status
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    ),
+    data_quality AS (
+      SELECT
+        CURRENT_DATE() as monitoring_date,
+        'DATA_QUALITY' as metric_category,
+        'MISSING_VALUES' as metric_name,
+        COUNTIF(score IS NULL) as metric_value,
+        CASE
+          WHEN COUNTIF(score IS NULL) > 100 THEN 'CRITICAL'
+          WHEN COUNTIF(score IS NULL) > 10 THEN 'WARNING'
+          ELSE 'NORMAL'
+        END as status
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    )
+
+    SELECT * FROM data_stats
+    UNION ALL
+    SELECT * FROM term_stats
+    UNION ALL
+    SELECT * FROM dma_stats
+    UNION ALL
+    SELECT * FROM data_quality
+    """.format(project_id=client.project, dataset_id=dataset_id)
+
+    client.query(simple_monitoring_query).result()
+    print("Created simplified monitoring dashboard")
+
+    monitoring_query = """
+    SELECT
+      metric_category,
+      metric_name,
+      metric_value,
+      status
+    FROM `{project_id}.{dataset_id}.monitoring_dashboard`
+    ORDER BY metric_category, metric_name
+    """.format(project_id=client.project, dataset_id=dataset_id)
+
+    monitoring_data = client.query(monitoring_query).to_dataframe()
+    print("Monitoring dashboard data:")
+    print(monitoring_data)
+
+except Exception as e:
+    print(f"Error creating simplified monitoring system: {e}")
+```
+
+Purpose: This ensures models stay current with evolving search patterns by periodically refreshing them with recent data, while providing full auditability through comprehensive logging of each retraining operation's timing and outcome.
+
+```
+# =============================================================================
+# AUTOMATED MODEL RETRAINING PROCEDURE
+# =============================================================================
+
+try:
+    simple_retraining_query = """
+    CREATE OR REPLACE PROCEDURE `{project_id}.{dataset_id}.simple_retrain_models`()
+    BEGIN
+      INSERT INTO `{project_id}.{dataset_id}.model_retraining_log`
+      (procedure_name, start_time, status, message)
+      VALUES ('simple_retrain_models', CURRENT_TIMESTAMP(), 'STARTED', 'Simple retraining procedure started');
+
+      CREATE OR REPLACE MODEL `{project_id}.{dataset_id}.simple_forecast_model`
+      OPTIONS(
+        model_type = 'ARIMA_PLUS',
+        time_series_timestamp_col = 'timestamp',
+        time_series_data_col = 'score',
+        time_series_id_col = 'term',
+        horizon = 12,
+        auto_arima = TRUE,
+        data_frequency = 'WEEKLY'
+      ) AS
+      SELECT
+        timestamp,
+        score,
+        term
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+      WHERE term IN (SELECT term FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+                     GROUP BY term ORDER BY COUNT(*) DESC LIMIT 3);
+
+      UPDATE `{project_id}.{dataset_id}.model_retraining_log`
+      SET end_time = CURRENT_TIMESTAMP(), status = 'COMPLETED',
+          message = 'Simple retraining completed successfully'
+      WHERE procedure_name = 'simple_retrain_models'
+      AND start_time = (SELECT MAX(start_time) FROM `{project_id}.{dataset_id}.model_retraining_log`
+                        WHERE procedure_name = 'simple_retrain_models');
+
+    END;
+    """.format(project_id=client.project, dataset_id=dataset_id)
+
+    client.query(simple_retraining_query).result()
+    print("Created simple retraining procedure")
+
+    client.query("CALL `{project_id}.{dataset_id}.simple_retrain_models`()".format(
+        project_id=client.project, dataset_id=dataset_id
+    )).result()
+    print("Simple retraining procedure executed successfully")
+
+except Exception as e:
+    print(f"Error creating simple retraining procedure: {e}")
+```
+
+Purpose: This provides a unified view of the entire analytics pipeline's health, enabling proactive maintenance by alerting when models need retraining, data quality deteriorates, or system performance declines.
+
+```
+# =============================================================================
+# MONITORING DASHBOARD ENHANCEMENT WITH MODEL METRICS
+# =============================================================================
+
+try:
+    check_model_query = """
+    SELECT model_name
+    FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.MODELS`
+    WHERE model_name = 'simple_forecast_model'
+    """.format(project_id=client.project, dataset_id=dataset_id)
+
+    model_exists = client.query(check_model_query).to_dataframe()
+
+    if not model_exists.empty:
+        update_monitoring_query = """
+        CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.monitoring_dashboard` AS
+        WITH model_stats AS (
+          SELECT
+            CURRENT_DATE() as monitoring_date,
+            'MODEL_STATS' as metric_category,
+            'MODEL_AIC' as metric_name,
+            AVG(AIC) as metric_value,
+            CASE
+              WHEN AVG(AIC) < 100 THEN 'OPTIMAL'
+              WHEN AVG(AIC) < 500 THEN 'ACCEPTABLE'
+              ELSE 'NEEDS_ATTENTION'
+            END as status
+          FROM ML.ARIMA_EVALUATE(MODEL `{project_id}.{dataset_id}.simple_forecast_model`)
+        ),
+        data_stats AS (
+          SELECT CURRENT_DATE() as monitoring_date, 'DATA_STATS' as metric_category, 'TOTAL_RECORDS' as metric_name, COUNT(*) as metric_value, 'NORMAL' as status FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+        ),
+        term_stats AS (
+          SELECT CURRENT_DATE() as monitoring_date, 'TERM_STATS' as metric_category, 'UNIQUE_TERMS' as metric_name, COUNT(DISTINCT term) as metric_value, 'NORMAL' as status FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+        ),
+        dma_stats AS (
+          SELECT CURRENT_DATE() as monitoring_date, 'DMA_STATS' as metric_category, 'UNIQUE_DMAS' as metric_name, COUNT(DISTINCT dma_name) as metric_value, 'NORMAL' as status FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+        ),
+        data_quality AS (
+          SELECT CURRENT_DATE() as monitoring_date, 'DATA_QUALITY' as metric_category, 'MISSING_VALUES' as metric_name, COUNTIF(score IS NULL) as metric_value,
+          CASE WHEN COUNTIF(score IS NULL) > 100 THEN 'CRITICAL' WHEN COUNTIF(score IS NULL) > 10 THEN 'WARNING' ELSE 'NORMAL' END as status FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+        )
+
+        SELECT * FROM model_stats
+        UNION ALL
+        SELECT * FROM data_stats
+        UNION ALL
+        SELECT * FROM term_stats
+        UNION ALL
+        SELECT * FROM dma_stats
+        UNION ALL
+        SELECT * FROM data_quality
+        """.format(project_id=client.project, dataset_id=dataset_id)
+
+        client.query(update_monitoring_query).result()
+        print("Updated monitoring dashboard with model information")
+
+        monitoring_query = """
+        SELECT
+          metric_category,
+          metric_name,
+          metric_value,
+          status
+        FROM `{project_id}.{dataset_id}.monitoring_dashboard`
+        ORDER BY metric_category, metric_name
+        """.format(project_id=client.project, dataset_id=dataset_id)
+
+        monitoring_data = client.query(monitoring_query).to_dataframe()
+        print("Updated monitoring dashboard data:")
+        print(monitoring_data)
+
+except Exception as e:
+    print(f"Error updating monitoring dashboard: {e}")
+
+# =============================================================================
+# AUTOMATED WEEKLY REPORTING SYSTEM
+# =============================================================================
+
+try:
+    weekly_report_query = """
+    CREATE OR REPLACE PROCEDURE `{project_id}.{dataset_id}.generate_simple_weekly_report`()
+    BEGIN
+      CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.weekly_reports` (
+        report_date DATE,
+        report_period STRING,
+        total_terms INT64,
+        total_dmas INT64,
+        avg_score FLOAT64,
+        generated_insight STRING
+      );
+
+      INSERT INTO `{project_id}.{dataset_id}.weekly_reports`
+      WITH basic_stats AS (
+        SELECT
+          COUNT(DISTINCT term) as total_terms,
+          COUNT(DISTINCT dma_name) as total_dmas,
+          AVG(score) as avg_score
+        FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+        WHERE DATE(timestamp) >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+      )
+      SELECT
+        CURRENT_DATE() as report_date,
+        'WEEKLY' as report_period,
+        total_terms,
+        total_dmas,
+        avg_score,
+        CONCAT('Weekly analysis completed. ', total_terms, ' terms tracked across ',
+               total_dmas, ' DMAs with average score of ', ROUND(avg_score, 1), '.') as generated_insight
+      FROM basic_stats;
+
+    END;
+    """.format(project_id=client.project, dataset_id=dataset_id)
+
+    client.query(weekly_report_query).result()
+    print("Created simple weekly report procedure")
+
+    client.query("CALL `{project_id}.{dataset_id}.generate_simple_weekly_report`()".format(
+        project_id=client.project, dataset_id=dataset_id
+    )).result()
+    print("Weekly report generated successfully")
+
+    report_query = "SELECT * FROM `{project_id}.{dataset_id}.weekly_reports`".format(
+        project_id=client.project, dataset_id=dataset_id
+    )
+    report_data = client.query(report_query).to_dataframe()
+    print("Weekly report data:")
+    print(report_data)
+
+except Exception as e:
+    print(f"Error creating weekly report procedure: {e}")
+
+```
+
+Purpose: This serves as the production-grade automation system that ensures reliable end-to-end execution of the analytics pipeline, providing full visibility into each step's success/failure and enabling scheduled, unattended operation.
+
+```
+# =============================================================================
+# CREATE REQUIRED TABLES BEFORE MASTER PIPELINE
+# =============================================================================
+
+print("Creating required tables before executing master pipeline...")
+
+create_log_table_query = """
+CREATE TABLE IF NOT EXISTS `{project_id}.{dataset_id}.pipeline_execution_log` (
+  pipeline_name STRING,
+  step_name STRING,
+  start_time TIMESTAMP,
+  end_time TIMESTAMP,
+  status STRING,
+  message STRING
+);
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    client.query(create_log_table_query).result()
+    print("pipeline_execution_log table created/verified")
+
+    check_log_query = "SELECT COUNT(*) as count FROM `{project_id}.{dataset_id}.pipeline_execution_log`".format(
+        project_id=client.project, dataset_id=dataset_id
+    )
+    log_count = client.query(check_log_query).to_dataframe()
+    print(f"Existing log entries: {log_count['count'].values[0]}")
+
+except Exception as e:
+    print(f"Error creating log table: {e}")
+
+required_tables = [
+    "preprocessed_terms_optimized",
+    "anomaly_detection_results",
+    "monitoring_dashboard"
+]
+
+for table_name in required_tables:
+    try:
+        check_table_query = """
+        SELECT table_name
+        FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.TABLES`
+        WHERE table_name = '{table_name}'
+        """.format(project_id=client.project, dataset_id=dataset_id, table_name=table_name)
+
+        table_exists = client.query(check_table_query).to_dataframe()
+
+        if table_exists.empty:
+            print(f"Table {table_name} doesn't exist yet (will be created by pipeline)")
+        else:
+            print(f"Table {table_name} exists")
+
+    except Exception as e:
+        print(f"Error checking table {table_name}: {e}")
+
+# =============================================================================
+# SIMPLIFIED MASTER PIPELINE 
+# =============================================================================
+
+simplified_pipeline_query = """
+CREATE OR REPLACE PROCEDURE `{project_id}.{dataset_id}.run_simplified_pipeline`()
+BEGIN
+  CREATE TABLE IF NOT EXISTS `{project_id}.{dataset_id}.pipeline_execution_log` (
+    pipeline_name STRING,
+    step_name STRING,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    status STRING,
+    message STRING
+  );
+
+  BEGIN
+    CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    PARTITION BY DATE(timestamp)
+    CLUSTER BY term, dma_name
+    AS
+    WITH term_stats AS (
+      SELECT
+        term,
+        COUNT(*) as frequency,
+        AVG(score) as avg_score,
+        MAX(score) as max_score,
+        STDDEV(score) as score_stddev
+      FROM `bigquery-public-data.google_trends.top_terms`
+      GROUP BY term
+      HAVING COUNT(*) > 52 AND AVG(score) > 10
+    )
+    SELECT
+      t.dma_name,
+      t.term,
+      t.week,
+      t.rank,
+      t.score,
+      TIMESTAMP(t.week) as timestamp,
+      s.avg_score,
+      s.score_stddev,
+      CASE
+        WHEN t.score > 80 THEN 'VERY_HIGH'
+        WHEN t.score > 60 THEN 'HIGH'
+        WHEN t.score > 40 THEN 'MEDIUM'
+        WHEN t.score > 20 THEN 'LOW'
+        ELSE 'VERY_LOW'
+      END as interest_level,
+      CASE
+        WHEN ABS(t.score - s.avg_score) > 2 * s.score_stddev THEN TRUE
+        ELSE FALSE
+      END as is_statistical_outlier
+    FROM `bigquery-public-data.google_trends.top_terms` t
+    JOIN term_stats s ON t.term = s.term
+    WHERE t.week >= '2022-01-01';
+
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Data Preparation', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Data table created');
+
+  EXCEPTION WHEN ERROR THEN
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Data Preparation', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+  END;
+
+  BEGIN
+    CREATE OR REPLACE MODEL `{project_id}.{dataset_id}.simple_forecast_model`
+    OPTIONS(
+      model_type = 'ARIMA_PLUS',
+      time_series_timestamp_col = 'timestamp',
+      time_series_data_col = 'score',
+      horizon = 12,
+      auto_arima = TRUE,
+      data_frequency = 'WEEKLY'
+    ) AS
+    SELECT
+      timestamp,
+      score
+    FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    WHERE term IN (SELECT term FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized` LIMIT 1);
+
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Model Training', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Forecast model created');
+
+  EXCEPTION WHEN ERROR THEN
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Model Training', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+  END;
+
+  INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+  VALUES ('simplified_pipeline', 'Pipeline Complete', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'COMPLETED', 'Simplified pipeline finished');
+
+END;
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    print("\nCreating simplified pipeline procedure...")
+    client.query(simplified_pipeline_query).result()
+    print("Simplified pipeline procedure created")
+
+    print("Executing simplified pipeline...")
+    client.query("CALL `{project_id}.{dataset_id}.run_simplified_pipeline`()".format(
+        project_id=client.project, dataset_id=dataset_id
+    )).result()
+    print("Simplified pipeline executed successfully")
+
+    log_query = "SELECT * FROM `{project_id}.{dataset_id}.pipeline_execution_log`".format(
+        project_id=client.project, dataset_id=dataset_id
+    )
+    execution_log = client.query(log_query).to_dataframe()
+    print("\nPipeline Execution Log:")
+    print(execution_log)
+
+except Exception as e:
+    print(f" Error with simplified pipeline: {e}")
+```
+
+Purpose: This creates a production-ready automation system that ensures reliable end-to-end execution while providing detailed operational intelligence through structured logging and conditional workflow management.
+
+```
+# =============================================================================
+# CREATE REQUIRED TABLES BEFORE MASTER PIPELINE
+# =============================================================================
+
+print("Creating required tables before executing master pipeline...")
+
+create_log_table_query = """
+CREATE TABLE IF NOT EXISTS `{project_id}.{dataset_id}.pipeline_execution_log` (
+  pipeline_name STRING,
+  step_name STRING,
+  start_time TIMESTAMP,
+  end_time TIMESTAMP,
+  status STRING,
+  message STRING
+);
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    client.query(create_log_table_query).result()
+    print("pipeline_execution_log table created/verified")
+
+    check_log_query = "SELECT COUNT(*) as count FROM `{project_id}.{dataset_id}.pipeline_execution_log`".format(
+        project_id=client.project, dataset_id=dataset_id
+    )
+    log_count = client.query(check_log_query).to_dataframe()
+    print(f"Existing log entries: {log_count['count'].values[0]}")
+
+except Exception as e:
+    print(f"Error creating log table: {e}")
+
+required_tables = [
+    "preprocessed_terms_optimized",
+    "anomaly_detection_results",
+    "monitoring_dashboard"
+]
+
+for table_name in required_tables:
+    try:
+        check_table_query = """
+        SELECT table_name
+        FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.TABLES`
+        WHERE table_name = '{table_name}'
+        """.format(project_id=client.project, dataset_id=dataset_id, table_name=table_name)
+
+        table_exists = client.query(check_table_query).to_dataframe()
+
+        if table_exists.empty:
+            print(f"Table {table_name} doesn't exist yet (will be created by pipeline)")
+        else:
+            print(f"Table {table_name} exists")
+
+    except Exception as e:
+        print(f"Error checking table {table_name}: {e}")
+
+# =============================================================================
+# SIMPLIFIED MASTER PIPELINE 
+# =============================================================================
+
+simplified_pipeline_query = """
+CREATE OR REPLACE PROCEDURE `{project_id}.{dataset_id}.run_simplified_pipeline`()
+BEGIN
+  CREATE TABLE IF NOT EXISTS `{project_id}.{dataset_id}.pipeline_execution_log` (
+    pipeline_name STRING,
+    step_name STRING,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    status STRING,
+    message STRING
+  );
+
+  BEGIN
+    CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    PARTITION BY DATE(timestamp)
+    CLUSTER BY term, dma_name
+    AS
+    WITH term_stats AS (
+      SELECT
+        term,
+        COUNT(*) as frequency,
+        AVG(score) as avg_score,
+        MAX(score) as max_score,
+        STDDEV(score) as score_stddev
+      FROM `bigquery-public-data.google_trends.top_terms`
+      GROUP BY term
+      HAVING COUNT(*) > 52 AND AVG(score) > 10
+    )
+    SELECT
+      t.dma_name,
+      t.term,
+      t.week,
+      t.rank,
+      t.score,
+      TIMESTAMP(t.week) as timestamp,
+      s.avg_score,
+      s.score_stddev,
+      CASE
+        WHEN t.score > 80 THEN 'VERY_HIGH'
+        WHEN t.score > 60 THEN 'HIGH'
+        WHEN t.score > 40 THEN 'MEDIUM'
+        WHEN t.score > 20 THEN 'LOW'
+        ELSE 'VERY_LOW'
+      END as interest_level,
+      CASE
+        WHEN ABS(t.score - s.avg_score) > 2 * s.score_stddev THEN TRUE
+        ELSE FALSE
+      END as is_statistical_outlier
+    FROM `bigquery-public-data.google_trends.top_terms` t
+    JOIN term_stats s ON t.term = s.term
+    WHERE t.week >= '2022-01-01';
+
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Data Preparation', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Data table created');
+
+  EXCEPTION WHEN ERROR THEN
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Data Preparation', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+  END;
+
+  BEGIN
+    CREATE OR REPLACE MODEL `{project_id}.{dataset_id}.simple_forecast_model`
+    OPTIONS(
+      model_type = 'ARIMA_PLUS',
+      time_series_timestamp_col = 'timestamp',
+      time_series_data_col = 'score',
+      horizon = 12,
+      auto_arima = TRUE,
+      data_frequency = 'WEEKLY'
+    ) AS
+    SELECT
+      timestamp,
+      score
+    FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    WHERE term IN (SELECT term FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized` LIMIT 1);
+
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Model Training', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Forecast model created');
+
+  EXCEPTION WHEN ERROR THEN
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('simplified_pipeline', 'Model Training', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+  END;
+
+  INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+  VALUES ('simplified_pipeline', 'Pipeline Complete', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'COMPLETED', 'Simplified pipeline finished');
+
+END;
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    print("\nCreating simplified pipeline procedure...")
+    client.query(simplified_pipeline_query).result()
+    print("Simplified pipeline procedure created")
+
+    print("Executing simplified pipeline...")
+    client.query("CALL `{project_id}.{dataset_id}.run_simplified_pipeline`()".format(
+        project_id=client.project, dataset_id=dataset_id
+    )).result()
+    print("Simplified pipeline executed successfully")
+
+    log_query = "SELECT * FROM `{project_id}.{dataset_id}.pipeline_execution_log`".format(
+        project_id=client.project, dataset_id=dataset_id
+    )
+    execution_log = client.query(log_query).to_dataframe()
+    print("\nPipeline Execution Log:")
+    print(execution_log)
+
+except Exception as e:
+    print(f" Error with simplified pipeline: {e}")
+
+# =============================================================================
+# COMPREHENSIVE MASTER PIPELINE
+# =============================================================================
+
+fixed_master_pipeline_query = """
+CREATE OR REPLACE PROCEDURE `{project_id}.{dataset_id}.run_complete_pipeline`()
+BEGIN
+  CREATE TABLE IF NOT EXISTS `{project_id}.{dataset_id}.pipeline_execution_log` (
+    pipeline_name STRING,
+    step_name STRING,
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    status STRING,
+    message STRING
+  );
+
+  INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+  VALUES ('complete_pipeline', 'Pipeline Started', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'RUNNING', 'Beginning pipeline execution');
+
+  BEGIN
+    CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+    PARTITION BY DATE(timestamp)
+    CLUSTER BY term, dma_name
+    AS
+    WITH term_stats AS (
+      SELECT
+        term,
+        COUNT(*) as frequency,
+        AVG(score) as avg_score,
+        MAX(score) as max_score,
+        STDDEV(score) as score_stddev
+      FROM `bigquery-public-data.google_trends.top_terms`
+      GROUP BY term
+      HAVING COUNT(*) > 52 AND AVG(score) > 10
+    )
+    SELECT
+      t.dma_name,
+      t.term,
+      t.week,
+      t.rank,
+      t.score,
+      TIMESTAMP(t.week) as timestamp,
+      s.avg_score,
+      s.score_stddev,
+      CASE
+        WHEN t.score > 80 THEN 'VERY_HIGH'
+        WHEN t.score > 60 THEN 'HIGH'
+        WHEN t.score > 40 THEN 'MEDIUM'
+        WHEN t.score > 20 THEN 'LOW'
+        ELSE 'VERY_LOW'
+      END as interest_level,
+      CASE
+        WHEN ABS(t.score - s.avg_score) > 2 * s.score_stddev THEN TRUE
+        ELSE FALSE
+      END as is_statistical_outlier
+    FROM `bigquery-public-data.google_trends.top_terms` t
+    JOIN term_stats s ON t.term = s.term
+    WHERE t.week >= '2022-01-01';
+
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('complete_pipeline', 'Data Preparation', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Preprocessed table created successfully');
+
+  EXCEPTION WHEN ERROR THEN
+    INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+    VALUES ('complete_pipeline', 'Data Preparation', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+    RETURN;
+  END;
+
+  IF (SELECT status FROM `{project_id}.{dataset_id}.pipeline_execution_log`
+      WHERE step_name = 'Data Preparation' ORDER BY start_time DESC LIMIT 1) = 'SUCCESS' THEN
+
+    BEGIN
+      CREATE OR REPLACE MODEL `{project_id}.{dataset_id}.production_forecast_model`
+      OPTIONS(
+        model_type = 'ARIMA_PLUS',
+        time_series_timestamp_col = 'timestamp',
+        time_series_data_col = 'score',
+        time_series_id_col = 'term',
+        horizon = 12,
+        auto_arima = TRUE,
+        data_frequency = 'WEEKLY'
+      ) AS
+      SELECT
+        timestamp,
+        score,
+        term
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+      WHERE term IN (SELECT term FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized` GROUP BY term LIMIT 3);
+
+      INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+      VALUES ('complete_pipeline', 'Model Training', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Forecast model trained successfully');
+
+    EXCEPTION WHEN ERROR THEN
+      INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+      VALUES ('complete_pipeline', 'Model Training', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+    END;
+
+    BEGIN
+      CREATE OR REPLACE TABLE `{project_id}.{dataset_id}.anomaly_detection_results` AS
+      SELECT
+        term,
+        week,
+        dma_name,
+        score,
+        avg_score,
+        score_stddev,
+        (score - avg_score) / score_stddev as z_score,
+        CASE
+          WHEN ABS((score - avg_score) / score_stddev) > 3 THEN 'SEVERE'
+          WHEN ABS((score - avg_score) / score_stddev) > 2 THEN 'MODERATE'
+          ELSE 'MILD'
+        END as severity,
+        'STATISTICAL' as anomaly_type
+      FROM `{project_id}.{dataset_id}.preprocessed_terms_optimized`
+      WHERE ABS((score - avg_score) / score_stddev) > 2;
+
+      INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+      VALUES ('complete_pipeline', 'Anomaly Detection', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'SUCCESS', 'Anomaly detection completed successfully');
+
+    EXCEPTION WHEN ERROR THEN
+      INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+      VALUES ('complete_pipeline', 'Anomaly Detection', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'FAILED', @@error.message);
+    END;
+
+  END IF;
+
+  INSERT INTO `{project_id}.{dataset_id}.pipeline_execution_log`
+  VALUES ('complete_pipeline', 'Pipeline Completed', CURRENT_TIMESTAMP(), CURRENT_TIMESTAMP(), 'COMPLETED', 'Pipeline execution finished');
+
+END;
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    print("\n" + "="*60)
+    print("ATTEMPTING COMPREHENSIVE MASTER PIPELINE")
+    print("="*60)
+
+    client.query(fixed_master_pipeline_query).result()
+    print("Fixed master pipeline procedure created")
+
+    print("Executing comprehensive master pipeline...")
+    client.query("CALL `{project_id}.{dataset_id}.run_complete_pipeline`()".format(
+        project_id=client.project, dataset_id=dataset_id
+    )).result()
+    print("Master pipeline executed successfully")
+
+    final_log_query = """
+    SELECT
+      step_name,
+      status,
+      message,
+      TIMESTAMP_DIFF(end_time, start_time, SECOND) as duration_seconds
+    FROM `{project_id}.{dataset_id}.pipeline_execution_log`
+    WHERE pipeline_name = 'complete_pipeline'
+    ORDER BY start_time
+    """.format(project_id=client.project, dataset_id=dataset_id)
+
+    final_log = client.query(final_log_query).to_dataframe()
+    print("\nFinal Pipeline Execution Summary:")
+    print(final_log)
+
+except Exception as e:
+    print(f"Error with comprehensive master pipeline: {e}")
+    print("The simplified pipeline was successful, which is a good starting point.")
+
+# =============================================================================
+# FINAL SYSTEM STATUS CHECK
+# =============================================================================
+
+print("\n" + "="*60)
+print("FINAL SYSTEM STATUS CHECK")
+print("="*60)
+
+tables_query = """
+SELECT table_name, table_type
+FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.TABLES`
+ORDER BY table_type, table_name
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    created_tables = client.query(tables_query).to_dataframe()
+    print("Created Tables and Views:")
+    print(created_tables)
+except Exception as e:
+    print(f"Error checking created tables: {e}")
+
+models_query = """
+SELECT model_name
+FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.MODELS`
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    created_models = client.query(models_query).to_dataframe()
+    print("\nCreated Models:")
+    print(created_models)
+except Exception as e:
+    print(f"Error checking created models: {e}")
+
+print("\n" + "="*60)
+print("PIPELINE SETUP COMPLETED!")
+print("="*60)
+```
+Purpose: This serves as the final validation and documentation step, giving users immediate visibility into what components were successfully created and confirming the system is ready for use.
+
+# =============================================================================
+# FINAL SYSTEM STATUS CHECK
+# =============================================================================
+
+print("\n" + "="*60)
+print("FINAL SYSTEM STATUS CHECK")
+print("="*60)
+
+tables_query = """
+SELECT table_name, table_type
+FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.TABLES`
+ORDER BY table_type, table_name
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    created_tables = client.query(tables_query).to_dataframe()
+    print("Created Tables and Views:")
+    print(created_tables)
+except Exception as e:
+    print(f"Error checking created tables: {e}")
+
+models_query = """
+SELECT model_name
+FROM `{project_id}.{dataset_id}.INFORMATION_SCHEMA.MODELS`
+""".format(project_id=client.project, dataset_id=dataset_id)
+
+try:
+    created_models = client.query(models_query).to_dataframe()
+    print("\nCreated Models:")
+    print(created_models)
+except Exception as e:
+    print(f"Error checking created models: {e}")
+
+print("\n" + "="*60)
+print("PIPELINE SETUP COMPLETED!")
+print("="*60)
